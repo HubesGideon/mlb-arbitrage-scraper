@@ -1,3 +1,5 @@
+print("[DEBUG] Script started", flush=True)
+
 import requests
 import json
 from datetime import datetime
@@ -25,7 +27,7 @@ def get_fanduel_odds():
         print(f"[FANDUEL ERROR] Status code: {response.status_code}", flush=True)
         return []
     odds_data = response.json()
-    print(json.dumps(odds_data, indent=2)[:3000], flush=True)  # Debug output (first 3000 chars)
+    print(json.dumps(odds_data, indent=2)[:1000], flush=True)  # Truncated for stability
     matchups = []
     for market in odds_data:
         if market["marketStatus"] != "OPEN":
