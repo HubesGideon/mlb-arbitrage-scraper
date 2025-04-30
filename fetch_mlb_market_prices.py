@@ -79,9 +79,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-        data = response.json()
-        print(json.dumps(data, indent=2)[:1000], flush=True)  # Truncated for stability
-        return []  # Temporarily disable parsing to test structure
-    except Exception as e:
-        print(f"[DRAFTKINGS ERROR] Exception occurred: {e}", flush=True)
-        return []
