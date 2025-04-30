@@ -53,10 +53,16 @@ def get_fanduel_odds():
     return matchups
 
 
+DK_HEADERS = {
+    "accept": "application/json",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "referer": "https://sportsbook.draftkings.com/"
+}
+
 def get_draftkings_odds():
     print("[DEBUG] Getting DraftKings odds...", flush=True)
     try:
-        response = requests.get(DRAFTKINGS_URL)
+        response = requests.get(DRAFTKINGS_URL, headers=DK_HEADERS)
         if response.status_code != 200:
             print(f"[DRAFTKINGS ERROR] Status code: {response.status_code}", flush=True)
             return []
