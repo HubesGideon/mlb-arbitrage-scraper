@@ -63,6 +63,7 @@ def get_draftkings_odds():
     print("[DEBUG] Getting DraftKings odds...", flush=True)
     try:
         response = requests.get(DRAFTKINGS_URL, headers=DK_HEADERS)
+        print(f"[DEBUG] DraftKings status: {response.status_code}, content-type: {response.headers.get('Content-Type')}", flush=True)
         if response.status_code != 200:
             print(f"[DRAFTKINGS ERROR] Status code: {response.status_code}", flush=True)
             return []
