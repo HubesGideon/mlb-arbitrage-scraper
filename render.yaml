@@ -1,0 +1,7 @@
+services:
+  - type: worker
+    name: mlb-arbitrage-scraper
+    runtime: python
+    buildCommand: ""
+    startCommand: python fetch_mlb_market_prices.py
+    plan: free
