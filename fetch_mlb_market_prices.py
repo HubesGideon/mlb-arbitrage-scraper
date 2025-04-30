@@ -18,10 +18,11 @@ HEADERS = {
 }
 
 def get_fanduel_odds():
+    print("[DEBUG] Getting FanDuel odds...", flush=True)
     payload = {"marketIds": FANDUEL_MARKET_IDS}
     response = requests.post(FANDUEL_URL, headers=HEADERS, json=payload)
     if response.status_code != 200:
-        print(f"[FANDUEL ERROR] Status code: {response.status_code}")
+        print(f"[FANDUEL ERROR] Status code: {response.status_code}", flush=True)
         return []
     odds_data = response.json()
     matchups = []
@@ -45,12 +46,14 @@ def get_fanduel_odds():
             "book": "FanDuel"
         }
         matchups.append(matchup)
+    print(f"[DEBUG] Found {len(matchups)} FanDuel matchups", flush=True)
     return matchups
 
 def get_draftkings_odds():
+    print("[DEBUG] Getting DraftKings odds...", flush=True)
     response = requests.get(DRAFTKINGS_URL)
     if response.status_code != 200:
-        print(f"[DRAFTKINGS ERROR] Status code: {response.status_code}")
+        print(f"[DRAFTKINGS ERROR] Status code: {response.status_code}", flush=True)
         return []
     data = response.json()
     events = {event['eventId']: event for event in data['eventGroup']['events']}
@@ -77,6 +80,7 @@ def get_draftkings_odds():
             matchups.append(matchup)
         except (KeyError, TypeError):
             continue
+    print(f"[DEBUG] Found {len(matchups)} DraftKings matchups", flush=True)
     return matchups
 
 def detect_arbitrage(matchups):
@@ -105,7 +109,7 @@ def log_arbitrage(opps):
                 f"{opp['matchup'][0]} vs {opp['matchup'][1]} | Odds: {opp['oddsA']} vs {opp['oddsB']} "
                 f"| Edge: {opp['edge']*100:.2f}%\n"
             )
-            print(line.strip())
+            print(line.strip(), flush=True)
             f.write(line)
 
 def send_alert(opps):
@@ -113,13 +117,15 @@ def send_alert(opps):
     pass
 
 def main():
-    print("[INFO] Fetching odds from sportsbooks...")
+    print("[INFO] Fetching odds from sportsbooks...", flush=True)
     fd_odds = get_fanduel_odds()
     dk_odds = get_draftkings_odds()
+    print(f"[DEBUG] Total FanDuel odds: {len(fd_odds)}", flush=True)
+    print(f"[DEBUG] Total DraftKings odds: {len(dk_odds)}", flush=True)
     all_odds = fd_odds + dk_odds
 
     if not all_odds:
-        print("[INFO] No matchups found.")
+        print("[INFO] No matchups found.", flush=True)
         return
 
     arbitrage_opps = detect_arbitrage(all_odds)
@@ -127,7 +133,7 @@ def main():
         log_arbitrage(arbitrage_opps)
         send_alert(arbitrage_opps)
     else:
-        print("[INFO] No arbitrage opportunities at this time.")
+        print("[INFO] No arbitrage opportunities at this time.", flush=True)
 
 if __name__ == "__main__":
     main()
