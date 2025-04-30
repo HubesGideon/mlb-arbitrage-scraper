@@ -56,30 +56,34 @@ def get_draftkings_odds():
         print(f"[DRAFTKINGS ERROR] Status code: {response.status_code}", flush=True)
         return []
     data = response.json()
-    events = {event['eventId']: event for event in data['eventGroup']['events']}
-    markets = data['eventGroup']['offerCategories'][0]['offerSubcategory']['offers']
     matchups = []
-    for game in markets:
-        if len(game) == 0:
-            continue
-        market = game[0]  # moneyline market
-        outcomes = market.get("outcomes", [])
-        if len(outcomes) != 2:
-            continue
-        try:
-            team_a = outcomes[0]
-            team_b = outcomes[1]
-            matchup = {
-                "marketId": market.get("label", "draftkings_ml"),
-                "teamA_id": team_a["participant"] + "_DK",
-                "teamB_id": team_b["participant"] + "_DK",
-                "teamA_odds": team_a["oddsDecimal"] or 0,
-                "teamB_odds": team_b["oddsDecimal"] or 0,
-                "book": "DraftKings"
-            }
-            matchups.append(matchup)
-        except (KeyError, TypeError):
-            continue
+    try:
+        offers = data['eventGroup']['offerCategories'][0]['offerSubcategory']['offers']
+        for game in offers:
+            for market in game:
+                if market.get("label", "").lower() != "moneyline":
+                    continue
+                outcomes = market.get("outcomes", [])
+                if len(outcomes) != 2:
+                    continue
+                try:
+                    team_a = outcomes[0]
+                    team_b = outcomes[1]
+                    if "oddsDecimal" not in team_a or "oddsDecimal" not in team_b:
+                        continue
+                    matchup = {
+                        "marketId": market.get("label", "draftkings_ml"),
+                        "teamA_id": team_a["participant"] + "_DK",
+                        "teamB_id": team_b["participant"] + "_DK",
+                        "teamA_odds": team_a["oddsDecimal"],
+                        "teamB_odds": team_b["oddsDecimal"],
+                        "book": "DraftKings"
+                    }
+                    matchups.append(matchup)
+                except (KeyError, TypeError):
+                    continue
+    except KeyError:
+        print("[DRAFTKINGS ERROR] Unexpected response structure.", flush=True)
     print(f"[DEBUG] Found {len(matchups)} DraftKings matchups", flush=True)
     return matchups
 
