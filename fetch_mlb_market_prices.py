@@ -1,95 +1,91 @@
-
 import requests
 import json
+from datetime import datetime
 
-url = "https://smp.ks.sportsbook.fanduel.com/api/sports/fixedodds/readonly/v1/getMarketPrices?priceHistory=1"
-headers = {
+FANDUEL_URL = "https://smp.ks.sportsbook.fanduel.com/api/sports/fixedodds/readonly/v1/getMarketPrices?priceHistory=1"
+MARKET_IDS = [
+    "720.121831340", "720.121827296", "720.121831339", "720.121822262", "720.121750208",
+    # (Add more marketIds or load from a file/database)
+]
+
+HEADERS = {
     "accept": "application/json",
     "content-type": "application/json",
     "origin": "https://sportsbook.fanduel.com",
     "referer": "https://sportsbook.fanduel.com/",
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    "user-agent": "Mozilla/5.0"
 }
 
-payload = {
-  "marketIds": [
-    "720.121831340",
-    "720.121827296",
-    "720.121831339",
-    "720.121822262",
-    "720.121750208",
-    "720.121822260",
-    "720.121804835",
-    "720.121750001",
-    "720.121804831",
-    "720.121804917",
-    "720.121750014",
-    "720.121804915",
-    "720.121805528",
-    "720.121750017",
-    "720.121805527",
-    "720.121805165",
-    "720.121750179",
-    "720.121805161",
-    "720.121805646",
-    "720.121750211",
-    "720.121805649",
-    "720.121807349",
-    "720.121750034",
-    "720.121807348",
-    "720.121807369",
-    "720.121749955",
-    "720.121807370",
-    "720.121807447",
-    "720.121749961",
-    "720.121807448",
-    "720.121821002",
-    "720.121749964",
-    "720.121821004",
-    "720.121828547",
-    "720.121750168",
-    "720.121828553",
-    "720.121829377",
-    "720.121750170",
-    "720.121829372",
-    "720.121842477",
-    "720.121749953",
-    "720.121842473",
-    "720.121807722",
-    "720.121750186",
-    "720.121807728",
-    "720.121807763",
-    "720.121750184",
-    "720.121807761"
-  ]
-}
+def get_fanduel_odds():
+    payload = {"marketIds": MARKET_IDS}
+    response = requests.post(FANDUEL_URL, headers=HEADERS, json=payload)
 
-response = requests.post(url, headers=headers, json=payload)
+    if response.status_code != 200:
+        print(f"[ERROR] Status code: {response.status_code}")
+        return []
 
-if response.status_code == 200:
-    data = response.json()
-    with open("mlb_market_prices.json", "w") as out_file:
-        json.dump(data, out_file, indent=2)
-    print("MLB market prices saved to mlb_market_prices.json")
-else:
-    print("Failed to fetch market prices:", response.status_code)
-import json
+    odds_data = response.json()
+    matchups = []
 
-# Load the data back from the file (optional, but ensures consistency)
-with open("mlb_market_prices.json", "r") as f:
-    data = json.load(f)
+    for market in odds_data:
+        if market["marketStatus"] != "OPEN":
+            continue
 
-# Print a readable summary of the first few outcomes
-print("✅ Fetched market prices. Showing a sample:")
+        runners = market.get("runnerDetails", [])
+        if len(runners) != 2:
+            continue
 
-for market in data[:3]:  # Show the first 3 markets
-    market_id = market.get("marketId", "N/A")
-    betting_type = market.get("bettingType", "N/A")
-    status = market.get("marketStatus", "N/A")
-    runners = market.get("runnerDetails", [])
+        try:
+            team_a_odds = runners[0]["winRunnerOdds"]["trueOdds"]["decimalOdds"]["decimalOdds"]
+            team_b_odds = runners[1]["winRunnerOdds"]["trueOdds"]["decimalOdds"]["decimalOdds"]
+        except (KeyError, TypeError):
+            continue
 
-    print(f"\n📊 Market ID: {market_id} | Type: {betting_type} | Status: {status}")
-    for runner in runners:
-        name = runner.get("selectionName", "Unknown")
-        odds = runner.get("decimalDisplayOdds", {}).get("decimalOdds", "N/A")
-        print(f" - {name}: {odds}")
+        matchup = {
+            "marketId": market["marketId"],
+            "teamA_id": runners[0]["selectionId"],
+            "teamB_id": runners[1]["selectionId"],
+            "teamA_odds": team_a_odds,
+            "teamB_odds": team_b_odds
+        }
+        matchups.append(matchup)
+
+    return matchups
+
+def detect_arbitrage(matchups):
+    arbitrage_opps = []
+    for match in matchups:
+        implied_prob = 1 / match["teamA_odds"] + 1 / match["teamB_odds"]
+        if implied_prob < 1:
+            match["edge"] = round(1 - implied_prob, 4)
+            arbitrage_opps.append(match)
+    return arbitrage_opps
+
+def log_arbitrage(opps):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("arbitrage_log.txt", "a") as f:
+        for opp in opps:
+            line = f"[{timestamp}] Arbitrage found! Market {opp['marketId']} | A: {opp['teamA_odds']} vs B: {opp['teamB_odds']} | Edge: {opp['edge']*100:.2f}%\n"
+            print(line.strip())
+            f.write(line)
+
+def send_alert(opps):
+    # Placeholder - hook this into email, Slack, Discord, etc.
+    pass
+
+def main():
+    print("[INFO] Fetching FanDuel odds...")
+    matchups = get_fanduel_odds()
+    if not matchups:
+        print("[INFO] No matchups found.")
+        return
+
+    arbitrage_opps = detect_arbitrage(matchups)
+    if arbitrage_opps:
+        log_arbitrage(arbitrage_opps)
+        send_alert(arbitrage_opps)
+    else:
+        print("[INFO] No arbitrage opportunities at this time.")
+
+if __name__ == "__main__":
+    main()
