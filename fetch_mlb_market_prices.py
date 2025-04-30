@@ -23,7 +23,8 @@ def get_fanduel_odds():
     print("[DEBUG] Getting FanDuel odds...", flush=True)
     payload = {"marketIds": FANDUEL_MARKET_IDS}
     response = requests.post(FANDUEL_URL, headers=HEADERS, json=payload)
-    if response.status_code != 200:
+    print(f"[DEBUG] DraftKings status: {response.status_code}, content length: {len(response.content)}", flush=True)
+        if response.status_code != 200:
         print(f"[FANDUEL ERROR] Status code: {response.status_code}", flush=True)
         return []
     odds_data = response.json()
@@ -61,7 +62,7 @@ def get_draftkings_odds():
             print(f"[DRAFTKINGS ERROR] Status code: {response.status_code}", flush=True)
             return []
         data = response.json()
-        print(json.dumps(data, indent=2)[:1000], flush=True)  # Truncated for stability
+        print(f"[DEBUG] DraftKings response keys: {list(data.keys())}", flush=True)  # Truncated for stability
         return []  # Temporarily disable parsing to test structure
     except Exception as e:
         print(f"[DRAFTKINGS ERROR] Exception occurred: {e}", flush=True)
