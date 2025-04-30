@@ -60,8 +60,8 @@ def get_draftkings_odds():
         if response.status_code != 200:
             print(f"[DRAFTKINGS ERROR] Status code: {response.status_code}", flush=True)
             return []
-        data = response.json()
-        print(f"[DEBUG] DraftKings raw response: {response.text[:1000]}", flush=True)  # Truncated for stability
+        print(f"[DEBUG] DraftKings raw response: {response.text[:1000]}", flush=True)
+        data = response.json()  # Truncated for stability
         return []  # Temporarily disable parsing to test structure
     except Exception as e:
         print(f"[DRAFTKINGS ERROR] Exception occurred: {e}", flush=True)
