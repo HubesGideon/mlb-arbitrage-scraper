@@ -57,9 +57,8 @@ def main():
         print("[DEBUG] Entered main()", flush=True)
         fd_odds = get_fanduel_odds()
         print(f"[DEBUG] Total FanDuel odds: {len(fd_odds)}", flush=True)
-        # Optional: skip DraftKings for now to isolate
-        # dk_odds = get_draftkings_odds()
-        # print(f"[DEBUG] Total DraftKings odds: {len(dk_odds)}", flush=True)
+                dk_odds = get_draftkings_odds()
+        print(f"[DEBUG] Total DraftKings odds: {len(dk_odds)}", flush=True)
     except Exception as e:
         print(f"[ERROR] Exception occurred: {e}", flush=True)
 
@@ -70,3 +69,14 @@ if __name__ == "__main__":
 
 def get_draftkings_odds():
     print("[DEBUG] Getting DraftKings odds...", flush=True)
+    try:
+        response = requests.get(DRAFTKINGS_URL)
+        if response.status_code != 200:
+            print(f"[DRAFTKINGS ERROR] Status code: {response.status_code}", flush=True)
+            return []
+        data = response.json()
+        print(json.dumps(data, indent=2)[:1000], flush=True)  # Truncated for stability
+        return []  # Temporarily disable parsing to test structure
+    except Exception as e:
+        print(f"[DRAFTKINGS ERROR] Exception occurred: {e}", flush=True)
+        return []
