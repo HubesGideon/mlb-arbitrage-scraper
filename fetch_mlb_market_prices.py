@@ -57,7 +57,7 @@ def main():
         print("[DEBUG] Entered main()", flush=True)
         fd_odds = get_fanduel_odds()
         print(f"[DEBUG] Total FanDuel odds: {len(fd_odds)}", flush=True)
-                dk_odds = get_draftkings_odds()
+        dk_odds = get_draftkings_odds()
         print(f"[DEBUG] Total DraftKings odds: {len(dk_odds)}", flush=True)
     except Exception as e:
         print(f"[ERROR] Exception occurred: {e}", flush=True)
