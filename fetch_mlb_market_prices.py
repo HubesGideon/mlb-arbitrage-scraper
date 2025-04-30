@@ -52,5 +52,21 @@ def get_fanduel_odds():
     print(f"[DEBUG] Found {len(matchups)} FanDuel matchups", flush=True)
     return matchups
 
+def main():
+    try:
+        print("[DEBUG] Entered main()", flush=True)
+        fd_odds = get_fanduel_odds()
+        print(f"[DEBUG] Total FanDuel odds: {len(fd_odds)}", flush=True)
+        # Optional: skip DraftKings for now to isolate
+        # dk_odds = get_draftkings_odds()
+        # print(f"[DEBUG] Total DraftKings odds: {len(dk_odds)}", flush=True)
+    except Exception as e:
+        print(f"[ERROR] Exception occurred: {e}", flush=True)
+
+
+if __name__ == "__main__":
+    main()
+
+
 def get_draftkings_odds():
     print("[DEBUG] Getting DraftKings odds...", flush=True)
