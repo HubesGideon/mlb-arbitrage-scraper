@@ -25,6 +25,7 @@ def get_fanduel_odds():
         print(f"[FANDUEL ERROR] Status code: {response.status_code}", flush=True)
         return []
     odds_data = response.json()
+    print(json.dumps(data, indent=2)[:3000], flush=True)  # Debug output (first 3000 chars)
     matchups = []
     for market in odds_data:
         if market["marketStatus"] != "OPEN":
@@ -50,6 +51,7 @@ def get_fanduel_odds():
     return matchups
 
 def get_draftkings_odds():
+    print("[DEBUG] Getting DraftKings odds...", flush=True)
     print("[DEBUG] Getting DraftKings odds...", flush=True)
     response = requests.get(DRAFTKINGS_URL)
     if response.status_code != 200:
