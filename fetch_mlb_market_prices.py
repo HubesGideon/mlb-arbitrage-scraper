@@ -73,3 +73,23 @@ if response.status_code == 200:
     print("MLB market prices saved to mlb_market_prices.json")
 else:
     print("Failed to fetch market prices:", response.status_code)
+import json
+
+# Load the data back from the file (optional, but ensures consistency)
+with open("mlb_market_prices.json", "r") as f:
+    data = json.load(f)
+
+# Print a readable summary of the first few outcomes
+print("✅ Fetched market prices. Showing a sample:")
+
+for market in data[:3]:  # Show the first 3 markets
+    market_id = market.get("marketId", "N/A")
+    betting_type = market.get("bettingType", "N/A")
+    status = market.get("marketStatus", "N/A")
+    runners = market.get("runnerDetails", [])
+
+    print(f"\n📊 Market ID: {market_id} | Type: {betting_type} | Status: {status}")
+    for runner in runners:
+        name = runner.get("selectionName", "Unknown")
+        odds = runner.get("decimalDisplayOdds", {}).get("decimalOdds", "N/A")
+        print(f" - {name}: {odds}")
