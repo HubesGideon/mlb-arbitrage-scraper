@@ -23,7 +23,7 @@ def get_fanduel_odds():
     print("[DEBUG] Getting FanDuel odds...", flush=True)
     payload = {"marketIds": FANDUEL_MARKET_IDS}
     response = requests.post(FANDUEL_URL, headers=HEADERS, json=payload)
-        if response.status_code != 200:
+    if response.status_code != 200:
         print(f"[FANDUEL ERROR] Status code: {response.status_code}", flush=True)
         return []
     odds_data = response.json()
